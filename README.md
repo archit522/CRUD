@@ -49,3 +49,8 @@ Date: {
 	default: Date.now
 }
 ```
+#### Project Structure:
+1. app.js : Is the main file which connects to MongoDB, Redis cache and handles routes
+2. .env.xxx : Config file for local, stage, production
+3. models folder : Defines schema of Job and Post
+4. routes folder : Handles GET, POST, PATCH, DELETE requests for Job and Post
