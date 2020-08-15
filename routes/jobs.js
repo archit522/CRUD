@@ -15,8 +15,10 @@ var redis = redisClient(6379, 'localhost');
 router.get('/', async(req, res) =>{
 	try{
 		const jobs = await Job.find();
+		res.status(200);
 		res.json(jobs);
 	}catch(err){
+		res.status(500);
 		res.json({message: err});
 	}
 });
@@ -38,6 +40,7 @@ router.post('/new', async (req, res) =>{
 		//Let post creation to be run in async mode
 		const savedPost = post.save( async (err, doc)=>{
 			if(err){
+				res.status(500);
 				res.json({message: err});
 			}
 			else{
@@ -47,12 +50,12 @@ router.post('/new', async (req, res) =>{
 				{$set: {status: "Done", result: JSON.stringify(doc)}},
 				{returnOriginal: false}
 					);
-				res.json(updatejob);
+				res.status(200);
 			}
 		});
-		res.json(savedJob);
-
+		res.json(a);
 	}catch(err){
+		res.status(500);
 		res.json({message: err});
 	}
 });
@@ -70,6 +73,7 @@ router.post('/find/:postId', async(req, res) => {
 		//Looking for post present in cache
 		redis.get(req.params.postId, async (err, reply) =>{
 			if(err){
+				res.status(500);
 				res.json({message: err});
 			}
 			else if(reply){
@@ -79,6 +83,7 @@ router.post('/find/:postId', async(req, res) => {
 				{$set: {status: "Done", result: reply}},
 				{returnOriginal: false}
 					);
+				res.status(200);
 			}
 			else{
 				//Looking for post in MongoDB if it is not present in cache
@@ -92,10 +97,12 @@ router.post('/find/:postId', async(req, res) => {
 				//Insering post into cache with a 3000 TTL set
 				redis.set(req.params.postId, JSON.stringify(post));
 				redis.expire(req.params.postId, 3000);
+				res.status(200);
 			}
 		});
 		res.json(a);
 	}catch(err){
+		res.status(500);
 		res.json({message: err});
 	}
 })
@@ -113,6 +120,7 @@ router.post('/delete/:postId', async(req, res) =>{
 		//Removing post from MongoDB 
 		const removedPost = Post.remove({_id: req.params.postId}, async (err, reply)=>{
 			if(err){
+				res.status(500);
 				res.json({message: err});
 			}
 			else{
@@ -126,10 +134,12 @@ router.post('/delete/:postId', async(req, res) =>{
 				redis.del(req.params.postId, function(err, reply){
 					console.log(reply);
 				});
+				res.status(200);
 			}
 		});
 		res.json(a);
 	}catch(err){
+		res.status(500);
 		res.json({message: err});
 	}
 });
@@ -150,13 +160,14 @@ router.post('/update/:postId', async(req, res)=>{
 			{$set: {title: req.body.title}},
 			{new: true}, async (err, doc) =>{
 				if(err){
+					res.status(500);
 					res.json({message: err});
 				}
 				else if(!doc){
-					res.json({message: "Internal error occured"});
+					res.status(400);
+					res.json({message: "Client error occured"});
 				}
 				else{
-					//
 					const updatejob = await Job.findOneAndUpdate(
 					{_id: a},
 					{$set: {status: "Done", result: JSON.stringify(doc)}},
@@ -164,10 +175,12 @@ router.post('/update/:postId', async(req, res)=>{
 						);
 					redis.set(req.params.postId, JSON.stringify(doc));
 					redis.expire(req.params.postId, 3000);
+					res.status(200);
 				}
 			});
 		res.json(a);
 	}catch(err){
+		res.status(500);
 		res.json({message: err});
 	}
 })
@@ -177,6 +190,7 @@ router.get('/:jobId', async(req, res) =>{
 	try{
 		//Find job in MongoDB
 		const job = await Job.findById(req.params.jobId);
+		res.status(200);
 		if(job.status == "Done"){
 			//Show result if job is done
 			res.json(job.result);
@@ -187,6 +201,7 @@ router.get('/:jobId', async(req, res) =>{
 		}
 	}catch(err){
 		//Report error if try fails
+		res.status(500);
 		res.json({message: err});
 	}
 });
