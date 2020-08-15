@@ -11,8 +11,10 @@ var redis = redisClient(6379, 'localhost');
 router.get('/', async (req, res) =>{
 	try{
 		const posts = await Post.find();
+		res.status(200);
 		res.json(posts);
 	}catch(err){
+		res.status(500);
 		res.json({message: err});
 	}
 });
@@ -26,8 +28,10 @@ router.post('/', async (req, res) =>{
 
 	try{
 		const savedPost = await post.save();
+		res.status(200);
 		res.json(savedPost);
 	} catch(err){
+		res.status(500);
 		res.json({message: err});
 	}
 });
@@ -39,10 +43,12 @@ router.get('/:postId', async (req, res) =>{
 		redis.get(req.params.postId, async (err, reply) =>{
 			if(err){
 				console.log(err);
+				res.status(500);
 				res.json({message: err});
 			}
 			else if(reply){
 				console.log(reply);
+				res.status(200);
 				res.json(reply);
 			}
 			else{
@@ -50,10 +56,12 @@ router.get('/:postId', async (req, res) =>{
 				const post = await Post.findById(req.params.postId);
 				redis.set(req.params.postId, JSON.stringify(post));
 				redis.expire(req.params.postId, 3000);
+				res.status(200);
 				res.json(post);
 			}
 		})
 	}catch(err){
+		res.status(500);
 		res.json({message: err});
 	}
 });
@@ -66,8 +74,10 @@ router.delete('/:postId', async (req, res) =>{
 		redis.del(req.params.postId, function(err, reply){
 			console.log(reply);
 		});
+		res.status(200);
 		res.json(removedPost);
 	}catch(err){
+		res.status(500);
 		res.json({message: err});
 	}
 });
@@ -81,20 +91,24 @@ router.patch('/:postId', async (req, res) =>{
 			{$set: {title: req.body.title}},
 			{new: true}, function(err, doc){
 				if(err){
+					res.status(500);
 					res.json({message: err});
 				}
 				else if(!doc){
+					res.status(400);
 					console.log("Missing doc");
 				}
 				else{
 					//Update post title in redis cache as well
 					redis.set(req.params.postId, JSON.stringify(doc));
 					redis.expire(req.params.postId, 3000);
+					res.status(200);
 					res.json(doc);
 				}
 			}
 			);
 	}catch(err){
+		res.status(500);
 		res.json({message: err});
 	}
 })
