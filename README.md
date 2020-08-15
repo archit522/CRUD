@@ -17,7 +17,7 @@ show its status pending
 3. Redis Cache
 
 ## Proposed Solution-
-Sync API is created with a NodeJS backend and connected to MongoDB and Redis Cache. The API can handle create, read, update, delete requests for a post. The Post Schema in JSON is as below-
+Sync API is created with a NodeJS backend and connected to MongoDB and Redis Cache. The API can handle create (POST), read (GET), update (PATCH), delete (DELETE) requests for a post. The Post Schema in JSON is as below-
 ```
 title: {
 	type: String,
@@ -33,8 +33,8 @@ date: {
 }
 ```
 Async API is created with NodeJS backend and connected to MongoDB and Redis Cache. 
-The API handles async queries by creating a job for each task. The tasks handled are create, read, update, delete of posts. 
-Once the job is created, system completes the task in the back and updates the status of the job with the appropriate result. The Job Schema in JSON is shown below-
+The API handles queries by creating a job for each task alloted. The tasks handled are create, read, update, delete of posts. 
+Once the job is created, a jobId is returned and system completes the task asynchronously and updates the status of the job as well as stores the result. The job status and result can be accessed by a GET request to the API. The Job Schema in JSON is shown below-
 ```
 result: {
 	type: String,
