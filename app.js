@@ -11,7 +11,7 @@ var redisClient = require('redis').createClient;
 var redis = redisClient(6379, 'localhost');
 
 //.env file contains database link URL
-require('dotenv/config')
+require('dotenv').config({ path: `./.env.local` });
 
 app.use(bodyParser.json());
 
