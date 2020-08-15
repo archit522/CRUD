@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 
+//Defining Schema of Jobs table in MongoDB with result, status and date
 const JobSchema = mongoose.Schema({
 	result: {
 		type: String,
